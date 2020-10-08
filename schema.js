@@ -1,3 +1,4 @@
+const axios = require('axios');
 const { 
   GraphQLObjectType, 
   GraphQLString, 
@@ -5,7 +6,6 @@ const {
   GraphQLList, 
   GraphQLSchema 
 } = require('graphql');
-const dataJson = require('./customers.json');
 
 const TotalType = new GraphQLObjectType({
   name: 'Total',
@@ -47,16 +47,27 @@ const CustomerType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    total: {
-      type: TotalType,
-      resolve() {
-        return dataJson;
-      }
-    },
+    // total: {
+    //   type: TotalType,
+    //   args: {
+    //     city: { type: GraphQLString }
+    //   },
+    //   resolve(parent, args) {
+    //     return new Promise((resolve, reject) => {
+    //       connection.query(
+    //         'SELECT COUNT(*) from ' + args.city,
+    //         (error, results) => {
+    //           return error ? reject(error) : resolve(results)
+    //         }
+    //       )
+    //     })
+    //   }
+    // },
     list: {
       type: new GraphQLList(ListType),
       resolve() {
-        return dataJson;
+        return axios.get(`http://localhost:3000/customers`)
+          .then(res => res.data);
       }
     },
     customer: {
@@ -65,7 +76,8 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLInt } 
       },
       resolve(parent, args) {
-        return dataJson[args.id-1];
+        return axios.get(`http://localhost:3000/customers/${args.id}`)
+          .then(res => res.data);
       }
     }
   }
